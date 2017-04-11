@@ -4,7 +4,7 @@ import logging
 import time
 from gensim import corpora, models, similarities
 
-# 基于向量空间模型实现的简单中文文本相似度计算，对于平均 170 词的 3148 篇文章，耗时约 20s
+# 基于向量空间模型（VSM）实现的中文文本相似度计算，对于平均 170 词的 3148 篇文章，耗时约 21s
 # 使用的是 Gensim：https://radimrehurek.com/gensim
 
 # 打印调试信息
@@ -31,7 +31,10 @@ with open('199801_clear.txt', 'r', encoding='GBK') as f_in:
                     documents.append(doc)
                 doc = []
             for index1 in range(1, len(words)):
-                if '/w' not in words[index1]:
+
+                # 学习其他同学过滤掉无意义的标点符号和助词等
+                if '/w' not in words[index1] and '/y' not in words[index1] and \
+                        '/u' not in words[index1] and '/c' not in words[index1]:
                     doc.append(words[index1])
     documents.append(doc)
 
@@ -53,8 +56,6 @@ corpus_tfidf = corpora.MmCorpus('tmp/corpus_tfidf.mm')
 
 # 构建文档相似度矩阵索引用于查询，再使用文档列表本身进行相似度查询（默认使用 Cosine）
 index = similarities.SparseMatrixSimilarity(corpus_tfidf)
-index.save('tmp/corpus_tfidf.index')
-index = similarities.MatrixSimilarity.load('tmp/corpus_tfidf.index')
 with open('result.txt', 'w') as f_out:
     for sim in index[corpus_tfidf]:
         f_out.write(','.join(map(str, sim)) + '\n')
