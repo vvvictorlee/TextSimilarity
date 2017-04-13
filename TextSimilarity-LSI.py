@@ -54,19 +54,20 @@ for word in fre:
         count += 1
 
 # 计算文档的 TF-IDF 向量，并形成文档-标引项矩阵（这里用的是稀疏矩阵表达）
-docs_total = len(documents)
-corpus_tfidf = []
+docs_total = len(documents)   # 文档总数
+corpus_tfidf = []   # 稀疏的文档-标引项矩阵
 for doc in documents:
-    word_total = 0
+    words_total = 0
     vector = []
     for word in doc:
         word_total += doc[word]
     for word in doc:
         if word in bag:
-            tf_idf = (doc[word] / word_total) * math.log(docs_total / (fre[word] + 1))
+            tf_idf = (doc[word] / words_total) * math.log(docs_total / (fre[word] + 1))
             vector.append((bag[word], tf_idf))
     corpus_tfidf.append(vector)
 
+# 后面 SVD 部分就是直接使用 Gensim 来处理文档-标引项矩阵得到结果了
 lsi = models.LsiModel(corpus_tfidf, num_topics=300)
 corpus_lsi = lsi[corpus_tfidf]   # 转换成潜语义文档向量列表并持久化
 corpora.MmCorpus.serialize('tmp/corpus_lsi.mm', corpus_lsi)
